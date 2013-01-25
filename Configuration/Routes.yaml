@@ -1,0 +1,36 @@
+-
+  name:          'specialized Frontend content with format and type'
+  uriPattern:    '{node}.html/{type}'
+  defaults:
+    '@package':    'TYPO3.Neos'
+    '@controller': 'Frontend\Node'
+    '@format':     'html'
+    '@action':     'show'
+  routeParts:
+    node:
+      handler:    Sandstorm\NeosAdvancedRoutingWorkaround\FrontendNodeRoutePartHandler
+
+-
+  name:          'specialized Frontend content with (HTML) format'
+  uriPattern:    '{node}.html'
+  defaults:
+    '@package':    'TYPO3.Neos'
+    '@controller': 'Frontend\Node'
+    '@format':     'html'
+    '@action':     'show'
+  routeParts:
+    node:
+      handler:    Sandstorm\NeosAdvancedRoutingWorkaround\FrontendNodeRoutePartHandler
+
+-
+  name:          'specialized Frontend content without a specified format'
+  uriPattern:    '{node}'
+  defaults:
+    '@package':    'TYPO3.Neos'
+    '@controller': 'Frontend\Node'
+    '@format':     'html'
+    '@action':     'show'
+  routeParts:
+    node:
+      handler:    Sandstorm\NeosAdvancedRoutingWorkaround\FrontendNodeRoutePartHandler
+  appendExceedingArguments: true

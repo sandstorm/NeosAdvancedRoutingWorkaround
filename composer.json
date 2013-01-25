@@ -1,0 +1,14 @@
+{
+    "name": "sandstorm/neosadvancedroutingworkaround",
+    "type": "typo3-flow-package",
+    "description": "Neos advanced routing workaround",
+    "version": "0.0.1",
+    "require": {
+        "typo3/neos": "*"
+    },
+    "autoload": {
+        "psr-0": {
+            "Sandstorm\\NeosAdvancedRoutingWorkaround": "Classes"
+        }
+    }
+}
