@@ -66,15 +66,29 @@ class FrontendNodeRoutePartHandler extends \TYPO3\Neos\Routing\FrontendNodeRoute
 				return FALSE;
 			}
 
-			$contentContext = $this->nodeRepository->getContext();
+			$contextProperties = array(
+				'workspaceName' => (isset($matches['WorkspaceName']) ? $matches['WorkspaceName'] : 'live'),
+			);
+
+			$currentDomain = $this->domainRepository->findOneByActiveRequest();
+			if ($currentDomain !== NULL) {
+				$contextProperties['currentSite'] = $currentDomain->getSite();
+				$contextProperties['currentDomain'] = $currentDomain;
+			} else {
+				$contextProperties['currentSite'] = $this->siteRepository->findFirst();
+			}
+			$contentContext = $this->contextFactory->create($contextProperties);
+
 			if ($contentContext->getWorkspace(FALSE) === NULL) {
 				return FALSE;
 			}
 
-			$node = $contentContext->getCurrentSiteNode()->getNode($matches['NodePath']);
-		} else {
+			$node = $contentContext->getNode($matches['NodePath']);
+		} elseif ($value instanceof \TYPO3\TYPO3CR\Domain\Model\Node) {
 			$node = $value;
-			$contentContext = $this->nodeRepository->getContext();
+			$contentContext = $node->getContext();
+		} else {
+			throw new \InvalidArgumentException('The provided value was neither a string nor a node.', 1371673910);
 		}
 
 		if ($node instanceof NodeInterface) {
@@ -90,8 +104,8 @@ class FrontendNodeRoutePartHandler extends \TYPO3\Neos\Routing\FrontendNodeRoute
 
 		// TODO: UNTIL HERE; THIS IS THE ORIGINAL CODE. Modifications follow below.
 
-		if ($node->getContentType()->hasUriPattern()) {
-			$uriPattern = $node->getContentType()->getUriPattern();
+		if ($node->getNodeType()->hasUriPattern()) {
+			$uriPattern = $node->getNodeType()->getUriPattern();
 			$context = array('node' => $node);
 			$context['str_replace'] = function($k, $v, $s) {
 				return str_replace($k, $v, $s);
