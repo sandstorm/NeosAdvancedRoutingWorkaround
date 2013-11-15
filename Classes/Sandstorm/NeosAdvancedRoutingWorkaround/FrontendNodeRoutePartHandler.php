@@ -25,6 +25,12 @@ class FrontendNodeRoutePartHandler extends \TYPO3\Neos\Routing\FrontendNodeRoute
 	protected $uriMappingRepository;
 
 	/**
+	 * @Flow\Inject
+	 * @var \TYPO3\Flow\Persistence\PersistenceManagerInterface
+	 */
+	protected $persistenceManager;
+
+	/**
 
 	 */
 	protected function matchValue($requestPath) {
@@ -122,10 +128,15 @@ class FrontendNodeRoutePartHandler extends \TYPO3\Neos\Routing\FrontendNodeRoute
 				$uriMapping->setUri($this->value);
 				$uriMapping->setContextNodePath($node->getContextPath());
 				$this->uriMappingRepository->add($uriMapping);
+				// Hacky, but works
+				$this->persistenceManager->persistAll();
 			} elseif ($uriMapping->getUri() !== $this->value) {
 				$uriMapping->setUri($this->value);
 				$this->uriMappingRepository->update($uriMapping);
+				// Hacky, but works
+				$this->persistenceManager->persistAll();
 			}
+
 		} else {
 			$this->value = substr($nodeContextPath, strlen($siteNodePath) + 1);
 		}
