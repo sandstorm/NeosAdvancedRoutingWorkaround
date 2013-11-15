@@ -61,56 +61,35 @@ class FrontendNodeRoutePartHandler extends \TYPO3\Neos\Routing\FrontendNodeRoute
 	 * @param mixed $value Either a Node object or an absolute context node path
 	 * @return boolean TRUE if value could be resolved successfully, otherwise FALSE.
 	 */
-	protected function resolveValue($value) {
-		if (!$value instanceof NodeInterface && !is_string($value)) {
+	protected function resolveValue($node) {
+		if (!$node instanceof NodeInterface && !is_string($node)) {
 			return FALSE;
 		}
 
-		if (is_string($value)) {
-			preg_match(NodeInterface::MATCH_PATTERN_CONTEXTPATH, $value, $matches);
-			if (!isset($matches['NodePath'])) {
-				return FALSE;
-			}
-
-			$contextProperties = array(
-				'workspaceName' => (isset($matches['WorkspaceName']) ? $matches['WorkspaceName'] : 'live'),
-			);
-
-			$currentDomain = $this->domainRepository->findOneByActiveRequest();
-			if ($currentDomain !== NULL) {
-				$contextProperties['currentSite'] = $currentDomain->getSite();
-				$contextProperties['currentDomain'] = $currentDomain;
-			} else {
-				$contextProperties['currentSite'] = $this->siteRepository->findFirst();
-			}
-			$contentContext = $this->contextFactory->create($contextProperties);
-
+		if (is_string($node)) {
+			$contentContext = $this->buildContextFromNodeContextPath($node);
 			if ($contentContext->getWorkspace(FALSE) === NULL) {
 				return FALSE;
 			}
-
-			$node = $contentContext->getNode($matches['NodePath']);
-		} elseif ($value instanceof \TYPO3\TYPO3CR\Domain\Model\Node) {
-			$node = $value;
+			$node = $contentContext->getNode($this->convertNodeContextPathToNodePath($node));
+			if ($node === NULL) {
+				return FALSE;
+			}
+		} else {
 			$contentContext = $node->getContext();
-		} else {
-			throw new \InvalidArgumentException('The provided value was neither a string nor a node.', 1371673910);
 		}
 
-		if ($node instanceof NodeInterface) {
-			$nodeContextPath = $node->getContextPath();
-			$siteNodePath = $contentContext->getCurrentSiteNode()->getPath();
-		} else {
-			return FALSE;
-		}
-
-		if (substr($nodeContextPath, 0, strlen($siteNodePath)) !== $siteNodePath) {
+		$nodeContextPath = $node->getContextPath();
+		$siteNode = $contentContext->getCurrentSiteNode();
+		$siteNodePath = $siteNode->getPath();
+		if ($this->onlyMatchSiteNodes() && $node !== $siteNode) {
 			return FALSE;
 		}
 
 		// TODO: UNTIL HERE; THIS IS THE ORIGINAL CODE. Modifications follow below.
-
-		if ($node->getNodeType()->hasUriPattern()) {
+		if ($nodeContextPath === $siteNodePath) {
+			$this->value = '';
+		} elseif ($node->getNodeType()->hasUriPattern()) {
 			$uriPattern = $node->getNodeType()->getUriPattern();
 			$context = array('node' => $node);
 			$context['str_replace'] = function($k, $v, $s) {
@@ -138,7 +117,7 @@ class FrontendNodeRoutePartHandler extends \TYPO3\Neos\Routing\FrontendNodeRoute
 			}
 
 		} else {
-			$this->value = substr($nodeContextPath, strlen($siteNodePath) + 1);
+			$this->value = ltrim(substr($nodeContextPath, strlen($siteNodePath)), '/');
 		}
 		return TRUE;
 	}
