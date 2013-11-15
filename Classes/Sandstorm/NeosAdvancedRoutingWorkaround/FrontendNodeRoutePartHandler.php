@@ -92,6 +92,12 @@ class FrontendNodeRoutePartHandler extends \TYPO3\Neos\Routing\FrontendNodeRoute
 		} elseif ($node->getNodeType()->hasUriPattern()) {
 			$uriPattern = $node->getNodeType()->getUriPattern();
 			$context = array('node' => $node);
+			$context['convert_from_date_if_needed'] = function($date) {
+				if (is_object($date) && $date instanceof \DateTime) {
+					return $date->format('Y-m-d');
+				}
+				return $date;
+			};
 			$context['str_replace'] = function($k, $v, $s) {
 				return str_replace($k, $v, $s);
 			};
