@@ -67,11 +67,13 @@ class FrontendNodeRoutePartHandler extends \TYPO3\Neos\Routing\FrontendNodeRoute
 		}
 
 		if (is_string($node)) {
-			$contentContext = $this->buildContextFromNodeContextPath($node);
+			$nodeContextPath = $node;
+			$contentContext = $this->buildContextFromContextPath($nodeContextPath);
 			if ($contentContext->getWorkspace(FALSE) === NULL) {
 				return FALSE;
 			}
-			$node = $contentContext->getNode($this->convertNodeContextPathToNodePath($node));
+			$node = $contentContext->getNode($this->removeContextFromContextPath($nodeContextPath));
+
 			if ($node === NULL) {
 				return FALSE;
 			}
@@ -79,15 +81,17 @@ class FrontendNodeRoutePartHandler extends \TYPO3\Neos\Routing\FrontendNodeRoute
 			$contentContext = $node->getContext();
 		}
 
-		$nodeContextPath = $node->getContextPath();
+		if (!$node->getNodeType()->isOfType('TYPO3.Neos:Document')) {
+			return FALSE;
+		}
+
 		$siteNode = $contentContext->getCurrentSiteNode();
-		$siteNodePath = $siteNode->getPath();
 		if ($this->onlyMatchSiteNodes() && $node !== $siteNode) {
 			return FALSE;
 		}
 
 		// TODO: UNTIL HERE; THIS IS THE ORIGINAL CODE. Modifications follow below.
-		if ($nodeContextPath === $siteNodePath) {
+		if ($node->getContextPath() === $siteNode->getContextPath()) {
 			$this->value = '';
 		} elseif ($node->getNodeType()->hasUriPattern()) {
 			$uriPattern = $node->getNodeType()->getUriPattern();
@@ -123,7 +127,8 @@ class FrontendNodeRoutePartHandler extends \TYPO3\Neos\Routing\FrontendNodeRoute
 			}
 
 		} else {
-			$this->value = ltrim(substr($nodeContextPath, strlen($siteNodePath)), '/');
+			$routePath = $this->resolveRoutePathForNode($siteNode, $node);
+			$this->value = $routePath;
 		}
 		return TRUE;
 	}
