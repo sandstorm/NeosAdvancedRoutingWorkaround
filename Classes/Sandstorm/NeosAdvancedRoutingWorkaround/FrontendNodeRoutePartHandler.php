@@ -72,7 +72,8 @@ class FrontendNodeRoutePartHandler extends \TYPO3\Neos\Routing\FrontendNodeRoute
 			if ($contentContext->getWorkspace(FALSE) === NULL) {
 				return FALSE;
 			}
-			$node = $contentContext->getNode($this->removeContextFromContextPath($nodeContextPath));
+			$nodePath = $this->removeContextFromPath($nodeContextPath);
+			$node = $contentContext->getNode($nodePath);
 
 			if ($node === NULL) {
 				return FALSE;
