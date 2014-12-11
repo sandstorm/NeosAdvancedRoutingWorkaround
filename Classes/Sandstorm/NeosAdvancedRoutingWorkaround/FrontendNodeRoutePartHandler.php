@@ -7,8 +7,6 @@ use TYPO3\TYPO3CR\Domain\Model\NodeInterface;
 
 /**
  * A route part handler for finding nodes specifically in the website's frontend.
- *
- * @Flow\Scope("singleton")
  */
 class FrontendNodeRoutePartHandler extends \TYPO3\Neos\Routing\FrontendNodeRoutePartHandler {
 
@@ -92,9 +90,7 @@ class FrontendNodeRoutePartHandler extends \TYPO3\Neos\Routing\FrontendNodeRoute
 		}
 
 		// TODO: UNTIL HERE; THIS IS THE ORIGINAL CODE. Modifications follow below.
-		if ($node->getContextPath() === $siteNode->getContextPath()) {
-			$this->value = '';
-		} elseif ($node->getNodeType()->hasUriPattern()) {
+		if ($node->getNodeType()->hasUriPattern()) {
 			$uriPattern = $node->getNodeType()->getUriPattern();
 			$context = array('node' => $node);
 			$context['convert_from_date_if_needed'] = function($date) {
@@ -134,4 +130,3 @@ class FrontendNodeRoutePartHandler extends \TYPO3\Neos\Routing\FrontendNodeRoute
 		return TRUE;
 	}
 }
-?>
